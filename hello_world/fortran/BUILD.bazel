@@ -1,0 +1,6 @@
+load("@rules_fortran//fortran:defs.bzl", "fortran_binary")
+
+fortran_binary(
+    name = "hello_world",
+    srcs = ["hello.f90"],
+)

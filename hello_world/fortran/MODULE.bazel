@@ -1,0 +1,7 @@
+bazel_dep(name = "rules_fortran")
+
+git_override(
+    module_name = "rules_fortran",
+    remote = "https://github.com/miinso/rules_fortran.git",
+    commit = "c9c49016a8bbf9f4b98655dadbcd30106802a67b", 
+)

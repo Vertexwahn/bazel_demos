@@ -1,0 +1,7 @@
+cc_test(
+    name = "main",
+    srcs = ["main.cpp"],
+    deps = [
+        "@Okapi//Flatland",
+    ],
+)
