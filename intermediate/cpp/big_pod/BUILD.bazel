@@ -1,0 +1,9 @@
+cc_binary(
+    name = "BigPod.Cli",
+    srcs = ["main.cpp"],
+    deps = [
+        "@abseil-cpp//absl/flags:flag",
+        "@abseil-cpp//absl/flags:parse",
+        "@org_pytorch_cpuinfo//:cpuinfo",
+    ],
+)

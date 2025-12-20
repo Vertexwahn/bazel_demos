@@ -4,5 +4,5 @@
 #-------------------------------------------------------------------------------------
 
 #common --registry=file:///%workspace%/registry  # Does not work on Windows 11 + Bazel 6.5.0
-common --registry=file:///Users/q448004/dev/Piper/develop/rules_boost
+common --registry=file:///Users/vertexwahn/dev/Piper/develop/rules_boost
 common --registry=https://bcr.bazel.build
