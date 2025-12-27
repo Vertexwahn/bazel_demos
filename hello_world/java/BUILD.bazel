@@ -1,7 +1,9 @@
 """
-    SPDX-FileCopyrightText: 2024 Julian Amann <dev@vertexwahn.de>
+    SPDX-FileCopyrightText: 2024-2025 Julian Amann <dev@vertexwahn.de>
     SPDX-License-Identifier: Apache-2.0
 """
+
+load("@rules_java//java:java_binary.bzl", "java_binary")
 
 java_binary(
     name = "hello_world",
