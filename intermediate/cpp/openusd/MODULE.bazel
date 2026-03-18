@@ -1,0 +1,17 @@
+"""
+    SPDX-FileCopyrightText: 2026 Julian Amann <dev@vertexwahn.de>
+    SPDX-License-Identifier: Apache-2.0
+"""
+
+bazel_dep(name = "rules_cc", version = "0.2.17")
+bazel_dep(name = "openusd", version = "25.11.bcr.3")
+
+single_version_override(
+    module_name = "openusd",
+    patches = [
+        "//patches:fix_dependency_cache.patch",
+        "//patches:fix_test_utils.patch",
+        "//patches:fix_windows_linkopts.patch",
+    ],
+    patch_strip = 1,
+)

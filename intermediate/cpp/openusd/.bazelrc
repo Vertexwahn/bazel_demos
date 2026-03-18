@@ -1,0 +1,15 @@
+# Visual Studio 2022
+#build:vs2022 --copt=-DNOGDI
+#build:vs2022 --cxxopt=/std:c++20
+#build:vs2022 --host_copt=-DNOGDI
+#build:vs2022 --@rules_cuda//cuda:target_platform=windows-x86_64
+#build:vs2022 --@rules_cuda//cuda:version=13.0.0
+build:vs2022 --copt=-DWIN32_LEAN_AND_MEAN
+build:vs2022 --cxxopt=/std:c++latest # Support for C++23 features
+build:vs2022 --cxxopt=/utf-8
+build:vs2022 --cxxopt=/Zc:__cplusplus
+build:vs2022 --cxxopt=/Zc:preprocessor # needed for __VA_OPT__ macro
+build:vs2022 --define compiler=vs2022
+build:vs2022 --enable_runfiles # https://github.com/bazelbuild/bazel/issues/8843
+build:vs2022 --host_copt=-DWIN32_LEAN_AND_MEAN
+test:vs2022 --test_env=PATH #  System PATH (containing CUDA toolkit DLLs like nvrtc64_*.dll) must be inherited by test subprocesses. Without this, the standalone NVRTC compiler subprocess fails with STATUS_DLL_NOT_FOUND (0xC0000135).

@@ -1,0 +1,8 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary")
+
+cc_binary(
+    name = "demo",
+    srcs = ["main.cpp"],                 # Source files
+    module_interfaces = ["foo.cppm"],   # Module Interface File (new attr)
+    features = ["cpp_modules"],         # Required: enable C++20 Modules support
+)

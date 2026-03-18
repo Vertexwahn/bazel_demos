@@ -1,0 +1,15 @@
+"""
+    SPDX-FileCopyrightText: 2026 Julian Amann <dev@vertexwahn.de>
+    SPDX-License-Identifier: Apache-2.0
+"""
+
+load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
+
+cc_binary(
+    name = "hello_world",
+    srcs = ["main.cpp"],
+    deps = [
+        "@openusd//:openusd",
+        "@bazel_tools//tools/cpp/runfiles",
+    ],
+)

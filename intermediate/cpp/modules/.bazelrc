@@ -1,0 +1,21 @@
+
+# GCC 13
+build:gcc13 --cxxopt=-std=c++23
+build:gcc13 --cxxopt=-Wall
+build:gcc13 --define compiler=gcc13
+build:gcc13 --cxxopt=-fpermissive # Needed for fmt
+#build:gcc13 --noincompatible_enable_cc_toolchain_resolution  # disable LLVM toolchain
+#build:gcc13 --@rules_cuda//cuda:copts=-allow-unsupported-compiler
+
+# LLVM toolchain for Bazel
+
+build:llvm_toolchain --cxxopt=-std=c++20
+
+# LLVM toolchain on Ubuntu
+build:llvm_toolchain_ubuntu --config=llvm_toolchain
+build:llvm_toolchain_ubuntu --extra_toolchains=@llvm_toolchain//:cc-toolchain-x86_64-linux
+build:llvm_toolchain_ubuntu --features=-libtool
+build:llvm_toolchain_ubuntu --cxxopt=-mwaitpkg
+build:llvm_toolchain_ubuntu --define compiler=clang19
+
+build:clang19 --config=llvm_toolchain_ubuntu

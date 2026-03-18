@@ -1,0 +1,11 @@
+--- a/pxr/exec/vdf/testUtils.cpp
++++ b/pxr/exec/vdf/testUtils.cpp
+@@ -156,7 +156,7 @@
+             return n.first;
+         }
+     }
+-    return NULL;
++    return std::string();
+ }
+ 
+ VdfConnection *
