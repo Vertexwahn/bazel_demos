@@ -1,0 +1,474 @@
+#
+#   SPDX-FileCopyrightText: 2026 Julian Amann <dev@vertexwahn.de>
+#   SPDX-License-Identifier: Apache-2.0
+#
+
+name: Bazel Demos
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  core-principles-macos-15:
+    name: "Core Principles: macOS 15"
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: bazel-contrib/setup-bazel@0.15.0
+        with:
+          bazelisk-cache: true
+      - name: Show Bazel version
+        run: bazelisk version
+      - name: ignore
+        working-directory: core_principles/bazel_ignore
+        run: bazelisk build //...
+      - name: version
+        working-directory: core_principles/bazel_version
+        run: bazelisk build
+      - name: genrule
+        working-directory: core_principles/genrule
+        run: |
+          bazelisk build //...
+          bazelisk run //:Demo
+      - name: select
+        working-directory: core_principles/select
+        run: |
+          bazelisk build //...
+          bazelisk run //:hello_world
+
+  core-principles-windows-2022:
+    name: "Core Principles: Windows Server 2022"
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - uses: bazel-contrib/setup-bazel@0.15.0
+        with:
+          bazelisk-cache: true
+      - name: Show Bazel version
+        shell: bash
+        run: bazelisk version
+      - name: Core Principles demos
+        shell: bash
+        run: |
+          cd core_principles/genrule
+          bazelisk build //...
+          bazelisk run //:Demo
+          cd ../select
+          bazelisk build //...
+          bazelisk run //:hello_world
+
+  hello-world-macos-15:
+    name: "Hello World: macOS 15"
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: bazel-contrib/setup-bazel@0.15.0
+        with:
+          bazelisk-cache: true
+      - name: Show OS version
+        run: |
+          sw_vers
+          uname
+      - name: Show Bazel version
+        run: bazelisk version
+      - name: Show Clang version
+        run: clang --version
+      - name: Hello World Bazel
+        working-directory: hello_world/bazel
+        run: bazelisk build //...
+      - name: Hello World C++
+        working-directory: hello_world/cpp
+        run: |
+          bazelisk build //...
+          bazelisk build --compilation_mode=dbg //...
+          bazelisk build --compilation_mode=opt //...
+          bazelisk run //:hello_world
+      - name: Hello World C#
+        working-directory: hello_world/cpp
+        run: |
+          bazelisk build //...
+          bazelisk run //:hello_world
+      - name: Hello World Go
+        working-directory: hello_world/go
+        run: |
+          bazelisk build //...
+          bazelisk run //:hello_world
+      - name: Hello World Java
+        working-directory: hello_world/java
+        run: |
+          bazelisk build //...
+          bazelisk run //:hello_world
+      - name: Hello World JavaScript
+        working-directory: hello_world/javascript
+        run: |
+          bazelisk build //...
+          bazelisk run //:hello_world
+      - name: Hello World LaTeX
+        working-directory: hello_world/latex
+        run: bazelisk build //...
+      - name: Hello World Perl
+        working-directory: hello_world/perl
+        run: |
+          bazelisk build //...
+          bazelisk run //:hello_world
+      - name: Hello World Python
+        working-directory: hello_world/python
+        run: |
+          bazelisk build //...
+          bazelisk run //:hello_world
+      - name: Hello World Rust
+        working-directory: hello_world/rust
+        run: |
+          bazelisk build //...
+          bazelisk run //:hello_world
+      - name: Hello World Shell
+        working-directory: hello_world/shell
+        run: |
+          bazelisk build //...
+          bazelisk run //:hello_world
+
+  hello-world-ubuntu-24-04:
+    name: "Hello World: Ubuntu 24.04"
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: bazel-contrib/setup-bazel@0.15.0
+        with:
+          bazelisk-cache: true
+      - name: Show OS version
+        run: lsb_release -a
+      - name: Show Bazel version
+        run: bazelisk version
+      - name: Show GCC version
+        run: gcc --version
+      - name: Hello World Bazel
+        working-directory: hello_world/bazel
+        run: bazelisk build //...
+      - name: Hello World C++
+        working-directory: hello_world/cpp
+        run: |
+          bazelisk build //...
+          bazelisk build --compilation_mode=dbg //...
+          bazelisk build --compilation_mode=opt //...
+          bazelisk run //:hello_world
+          bazelisk run --enable_bzlmod //:hello_world
+      - name: Hello World C#
+        working-directory: hello_world/cpp
+        run: |
+          bazelisk build //...
+          bazelisk run //:hello_world
+      - name: Hello World D
+        working-directory: hello_world/d
+        run: bazelisk run //:hello_world
+      - name: Hello World Go
+        working-directory: hello_world/go
+        run: bazelisk run //:hello_world
+      - name: Hello World Java
+        working-directory: hello_world/java
+        run: bazelisk run //:hello_world
+      - name: Hello World JavaScript
+        working-directory: hello_world/javascript
+        run: bazelisk run //:hello_world
+      - name: Hello World Julia
+        working-directory: hello_world/julia
+        run: bazelisk run //:hello_world
+      - name: Hello World LaTeX
+        working-directory: hello_world/latex
+        run: bazelisk build //...
+      - name: Hello World Perl
+        working-directory: hello_world/perl
+        run: |
+          bazelisk build //...
+          bazelisk run //:hello_world
+      - name: Hello World Python
+        working-directory: hello_world/python
+        run: |
+          bazelisk build //...
+          bazelisk run //:hello_world
+      - name: Hello World Rust
+        working-directory: hello_world/rust
+        run: |
+          bazelisk build //...
+          bazelisk run //:hello_world
+      - name: Hello World Shell
+        working-directory: hello_world/shell
+        run: |
+          bazelisk build //...
+          bazelisk run //:hello_world
+
+  hello-world-windows-2022:
+    name: "Hello World: Windows Server 2022"
+    runs-on: windows-2022
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: bazel-contrib/setup-bazel@0.15.0
+        with:
+          bazelisk-cache: true
+      - name: Show Bazel version
+        run: bazelisk version
+      - name: Hello World Bazel
+        working-directory: hello_world/bazel
+        run: bazelisk build //...
+      - name: Hello World C++
+        working-directory: hello_world/cpp
+        run: |
+          bazelisk build //...
+          bazelisk build --compilation_mode=dbg //...
+          bazelisk build --compilation_mode=opt //...
+          bazelisk run //:hello_world
+          bazelisk run --enable_bzlmod //:hello_world
+      - name: Hello World C#
+        working-directory: hello_world/cpp
+        run: |
+          bazelisk build //...
+          bazelisk run //:hello_world
+      - name: Hello World Go
+        working-directory: hello_world/go
+        run: |
+          bazelisk build //...
+          bazelisk run //:hello_world
+      - name: Hello World Java
+        working-directory: hello_world/java
+        run: |
+          bazelisk build //...
+          bazelisk run //:hello_world
+      - name: Hello World JavaScript
+        working-directory: hello_world/javascript
+        run: |
+          bazelisk build --enable_runfiles //...
+          bazelisk run --enable_runfiles //:hello_world
+      - name: Hello World Perl
+        working-directory: hello_world/perl
+        run: |
+          bazelisk build //...
+          bazelisk run //:hello_world
+      - name: Hello World Python
+        working-directory: hello_world/python
+        run: |
+          bazelisk build //...
+          bazelisk run //:hello_world
+
+  hello-world-windows-2025:
+    name: "Hello World: Windows Server 2025"
+    runs-on: windows-2025
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: bazel-contrib/setup-bazel@0.15.0
+        with:
+          bazelisk-cache: true
+      - name: Show Bazel version
+        run: bazelisk version
+      - name: Hello World Bazel
+        working-directory: hello_world/bazel
+        run: bazelisk build //...
+      - name: Hello World C++
+        working-directory: hello_world/cpp
+        run: |
+          bazelisk build //...
+          bazelisk build --compilation_mode=dbg //...
+          bazelisk build --compilation_mode=opt //...
+          bazelisk run //:hello_world
+          bazelisk run --enable_bzlmod //:hello_world
+      - name: Hello World C#
+        working-directory: hello_world/cpp
+        run: |
+          bazelisk build //...
+          bazelisk run //:hello_world
+      - name: Hello World Go
+        working-directory: hello_world/go
+        run: |
+          bazelisk build //...
+          bazelisk run //:hello_world
+      - name: Hello World Java
+        working-directory: hello_world/java
+        run: |
+          bazelisk build //...
+          bazelisk run //:hello_world
+      - name: Hello World JavaScript
+        working-directory: hello_world/javascript
+        run: |
+          bazelisk build --enable_runfiles //...
+          bazelisk run --enable_runfiles //:hello_world
+      - name: Hello World Perl
+        working-directory: hello_world/perl
+        run: |
+          bazelisk build //...
+          bazelisk run //:hello_world
+      - name: Hello World Python
+        working-directory: hello_world/python
+        run: |
+          bazelisk build //...
+          bazelisk run //:hello_world
+
+  intermediate-macos-15:
+    name: "Intermediate: macOS 15"
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: bazel-contrib/setup-bazel@0.15.0
+        with:
+          bazelisk-cache: true
+      - name: Show OS version
+        run: |
+          sw_vers
+          uname
+      - name: Show Bazel version
+        run: bazelisk version
+      - name: blaze-math
+        working-directory: intermediate/cpp/blaze-math
+        run: |
+          bazelisk build --config=gcc11 --enable_bzlmod //...
+          bazelisk build --config=gcc11 --enable_bzlmod //... --compilation_mode=dbg //...
+          bazelisk build --config=gcc11 --enable_bzlmod //... --compilation_mode=opt //...
+      - name: Catch2
+        working-directory: intermediate/cpp/catch2
+        run: |
+          bazelisk test --config=gcc11 //...
+          bazelisk test --config=gcc11 --compilation_mode=dbg //...
+          bazelisk test --config=gcc11 --compilation_mode=opt //...
+          bazelisk test --enable_bzlmod --config=gcc11 //...
+          bazelisk test --enable_bzlmod --config=gcc11 --compilation_mode=dbg //...
+          bazelisk test --enable_bzlmod --config=gcc11 --compilation_mode=opt //...
+      - name: Bazel third_party lib googletest
+        working-directory: intermediate/cpp/googletest
+        run: |
+          bazelisk build --config=macos //...
+          bazelisk test --config=macos //...
+      - name: Bazel query infrastructure/K8s/nginx
+        working-directory: intermediate/infrastructure/k8s/nginx
+        run: bazelisk query //...
+      - name: EmscriptenGL
+        working-directory: intermediate/cpp/gpu/opengl/EmscriptenGL
+        run: bazelisk build --config=macos -- //:index_wasm
+      - name: EmscriptenGLFW
+        working-directory: intermediate/cpp/gpu/opengl/EmscriptenGLFW
+        run: |
+          bazelisk build --config=macos //:main
+          bazelisk build --config=macos -- //:emscripten_main_wasm
+      - name: OpenEXR bzlmod
+        working-directory: intermediate/cpp/openexr/bzlmod
+        run: bazelisk build //...
+
+  intermediate-ubuntu-24-04:
+    name: "Intermediate: Ubuntu 24.04"
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: bazel-contrib/setup-bazel@0.15.0
+        with:
+          bazelisk-cache: true
+      - name: Show OS version
+        run: lsb_release -a
+      - name: Show Bazel version
+        run: bazelisk version
+      - name: Show GCC version
+        run: gcc --version
+      - name: Blaze
+        working-directory: intermediate/nanobind
+        run: |
+          bazelisk run //okapi/python:my_bin
+          bazelisk test //...
+      - name: blaze-math
+        working-directory: intermediate/cpp/blaze-math
+        run: |
+          bazelisk build --config=gcc11
+          bazelisk build --config=gcc11 --compilation_mode=dbg //...
+          bazelisk build --config=gcc11 --compilation_mode=opt //...
+      - name: catch2
+        working-directory: intermediate/cpp/catch2
+        run: |
+          bazelisk test --config=gcc11 //...
+          bazelisk test --config=gcc11 --compilation_mode=dbg //...
+          bazelisk test --config=gcc11 --compilation_mode=opt //...
+          bazelisk test --enable_bzlmod --config=gcc11 //...
+          bazelisk test --enable_bzlmod --config=gcc11 --compilation_mode=dbg //...
+          bazelisk test --enable_bzlmod --config=gcc11 --compilation_mode=opt //...
+      - name: Eigen
+        working-directory: intermediate/cpp/eigen
+        run: |
+          bazelisk build --config=gcc11 //...
+          bazelisk build --config=gcc11 --compilation_mode=dbg //...
+          bazelisk build --config=gcc11 --compilation_mode=opt //...
+      - name: fmt
+        working-directory: intermediate/cpp/fmt
+        run: |
+          bazelisk build //...
+          bazelisk run //:main
+      - name: JsonForModernCpp
+        working-directory: intermediate/cpp/JsonForModernCpp
+        run: |
+          echo "fast"
+          bazelisk build --config=gcc11 //...
+          bazelisk test --config=gcc11 //...
+          echo "dbg"
+          bazelisk build --config=gcc11 --compilation_mode=dbg //...
+          bazelisk test --config=gcc11 --compilation_mode=dbg //...
+          echo "opt"
+          bazelisk build --config=gcc11 --compilation_mode=opt //...
+      - name: googletest
+        working-directory: intermediate/cpp/googletest
+        run: |
+          bazelisk test --config=gcc11 //...
+          bazelisk test --enable_bzlmod --config=gcc11 //...
+      - name: oneTBB
+        working-directory: intermediate/cpp/onetbb
+        run: bazelisk build //...
+      - name: OpenEXR bzlmod
+        working-directory: intermediate/cpp/openexr/bzlmod
+        run: bazelisk build //...
+      - name: OpenEXR
+        working-directory: intermediate/cpp/openexr/repo-focused
+        run: bazelisk build //...
+      - name: rules_oci_bash
+        working-directory: intermediate/infrastructure/docker/rules_oci_bash
+        run: |
+          bazelisk run //:tarball
+          docker run vertexwahn/my_example:v0.0.1
+      - name: EmscriptenGL
+        working-directory: intermediate/cpp/gpu/opengl/EmscriptenGL
+        run: bazelisk build --config=gcc11 -- //:index_wasm
+      - name: EmscriptenGLFW
+        working-directory: intermediate/cpp/gpu/opengl/EmscriptenGLFW
+        run: |
+          bazelisk build --config=gcc11 //:main
+          bazelisk build --config=gcc11 -- //:emscripten_main_wasm
+      - name: WebdriverDemoMinimal
+        working-directory: intermediate/WebdriverDemoMinimal
+        run: bazelisk test //...
+
+  intermediate-windows-2022:
+    name: "Intermediate: Windows Server 2022"
+    runs-on: windows-2022
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: bazel-contrib/setup-bazel@0.15.0
+        with:
+          bazelisk-cache: true
+      - name: Show Bazel version
+        run: bazelisk version
+      - name: googletest
+        working-directory: intermediate/cpp/googletest
+        run: |
+          bazelisk test --config=gcc11 //...
+          bazelisk test --enable_bzlmod --config=gcc11 //...
+      - name: oneTBB
+        working-directory: intermediate/cpp/onetbb
+        run: |
+          bazelisk build //...
+          bazelisk test //...
+      - name: OpenEXR bzlmod
+        working-directory: intermediate/cpp/openexr/bzlmod
+        run: bazelisk build //...
+      - name: OpenEXR
+        working-directory: intermediate/cpp/openexr/repo-focused
+        run: bazelisk build //...
