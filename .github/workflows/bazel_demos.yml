@@ -15,7 +15,7 @@ jobs:
     runs-on: macos-26
     steps:
       - uses: actions/checkout@v7
-      - uses: bazel-contrib/setup-bazel@0.15.0
+      - uses: bazel-contrib/setup-bazel@0.19.2
         with:
           bazelisk-cache: true
       - name: Show Bazel version
@@ -42,7 +42,7 @@ jobs:
     runs-on: windows-2025
     steps:
       - uses: actions/checkout@v7
-      - uses: bazel-contrib/setup-bazel@0.15.0
+      - uses: bazel-contrib/setup-bazel@0.19.2
         with:
           bazelisk-cache: true
       - name: Show Bazel version
@@ -63,7 +63,7 @@ jobs:
     runs-on: macos-26
     steps:
       - uses: actions/checkout@v7
-      - uses: bazel-contrib/setup-bazel@0.15.0
+      - uses: bazel-contrib/setup-bazel@0.19.2
         with:
           bazelisk-cache: true
       - name: Show OS version
@@ -133,7 +133,7 @@ jobs:
     runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v7
-      - uses: bazel-contrib/setup-bazel@0.15.0
+      - uses: bazel-contrib/setup-bazel@0.19.2
         with:
           bazelisk-cache: true
       - name: Show OS version
@@ -205,7 +205,7 @@ jobs:
         shell: bash
     steps:
       - uses: actions/checkout@v7
-      - uses: bazel-contrib/setup-bazel@0.15.0
+      - uses: bazel-contrib/setup-bazel@0.19.2
         with:
           bazelisk-cache: true
       - name: Show Bazel version
@@ -257,7 +257,7 @@ jobs:
     runs-on: macos-26
     steps:
       - uses: actions/checkout@v7
-      - uses: bazel-contrib/setup-bazel@0.15.0
+      - uses: bazel-contrib/setup-bazel@0.19.2
         with:
           bazelisk-cache: true
       - name: Show OS version
@@ -306,7 +306,7 @@ jobs:
     runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v7
-      - uses: bazel-contrib/setup-bazel@0.15.0
+      - uses: bazel-contrib/setup-bazel@0.19.2
         with:
           bazelisk-cache: true
       - name: Show OS version
@@ -395,7 +395,7 @@ jobs:
         shell: bash
     steps:
       - uses: actions/checkout@v7
-      - uses: bazel-contrib/setup-bazel@0.15.0
+      - uses: bazel-contrib/setup-bazel@0.19.2
         with:
           bazelisk-cache: true
       - name: Show Bazel version
