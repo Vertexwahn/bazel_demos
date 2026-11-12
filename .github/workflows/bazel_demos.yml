@@ -227,6 +227,8 @@ jobs:
         run: |
           bazelisk build //...
           bazelisk run //:hello_world
+      - name: Import Swift signing keys
+        run: curl -fsSL https://swift.org/keys/all-keys.asc | gpg --import
       - uses: swift-actions/setup-swift@v3
         with:
           swift-version: "latest"
