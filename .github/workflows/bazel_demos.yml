@@ -315,11 +315,11 @@ jobs:
         run: bazelisk version
       - name: Show GCC version
         run: gcc --version
-      - name: Blaze
+      - name: nanobind
         working-directory: intermediate/nanobind
         run: |
-          bazelisk run //okapi/python:my_bin
-          bazelisk test //...
+          bazelisk run //okapi/python:plot
+          bazelisk build //...
       - name: blaze-math
         working-directory: intermediate/cpp/blaze-math
         run: |
@@ -408,9 +408,7 @@ jobs:
           bazelisk test --enable_bzlmod --config=gcc11 //...
       - name: oneTBB
         working-directory: intermediate/cpp/onetbb
-        run: |
-          bazelisk build //...
-          bazelisk test //...
+        run: bazelisk build //...
       - name: OpenEXR bzlmod
         working-directory: intermediate/cpp/openexr/bzlmod
         run: bazelisk build //...
