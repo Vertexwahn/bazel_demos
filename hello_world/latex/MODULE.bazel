@@ -8,5 +8,11 @@ bazel_dep(name = "bazel_latex")
 git_override(
     module_name = "bazel_latex", 
     remote = "https://github.com/ProdriveTechnologies/bazel-latex.git",
-    commit = "c552d5bd09e4e9e49040ede60dd97720acb1cbb7",
+    commit = "c43a03dc4dd56097bb153f4abb7dbbdc5b66fdf1",
+)
+
+# The bazel_latex dependency requests 0.12.0, which uses a Bazel 9-removed API.
+single_version_override(
+    module_name = "rules_foreign_cc",
+    version = "0.17.0",
 )

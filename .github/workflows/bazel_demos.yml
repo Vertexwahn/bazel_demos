@@ -171,6 +171,7 @@ jobs:
         run: bazelisk run //:hello_world
       - uses: erlef/setup-beam@v1
         with:
+          otp-version: "28"
           gleam-version: "1.19.2"
       - name: Download Gleam dependencies
         working-directory: hello_world/gleam
@@ -416,6 +417,17 @@ jobs:
       - name: EmscriptenGL
         working-directory: intermediate/cpp/gpu/opengl/EmscriptenGL
         run: bazelisk build --config=gcc11 -- //:index_wasm
+      - name: Install GLFW X11 dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libgl1-mesa-dev \
+            libx11-dev \
+            libxcursor-dev \
+            libxi-dev \
+            libxinerama-dev \
+            libxrandr-dev \
+            libxxf86vm-dev
       - name: EmscriptenGLFW
         working-directory: intermediate/cpp/gpu/opengl/EmscriptenGLFW
         run: |

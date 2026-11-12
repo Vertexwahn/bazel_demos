@@ -44,7 +44,15 @@ wasm_cc_binary(
 
 cc_library(
     name = "system_x11",
-    linkopts = ["-lX11"],
+    linkopts = [
+        "-lGL",
+        "-lX11",
+        "-lXcursor",
+        "-lXi",
+        "-lXinerama",
+        "-lXrandr",
+        "-lXxf86vm",
+    ],
     visibility = ["//visibility:private"],
 )
 
