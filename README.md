@@ -31,16 +31,24 @@ Not all demos that can be found here are also covered by CI.
 ## Hello World
 
 Under [hello_world](/hello_world) you can find Hello World examples in misc programming languages using Bazel.
-The following table shows on which OS configurations the examples were successfully tested. 
+The following table shows which examples are covered by the current CI matrix. A dash means the example is not tested on that OS.
 
-| Language support on  | macOS   | Ubuntu |  Windows |
-| -------------------- | ------- | ------ |  ------- |
-| C++                  | yes     | yes    |  yes     |
-| C#                   | yes     | yes    |  yes     |
-| D                    | no      | yes    |  no      |
-| Go                   | yes     | yes    |          |
-| Python               | yes     | yes    |          |
-| Rust                 | yes     | yes    |          |
+| Language support on  | macOS 26 | Ubuntu 26.04 | Windows Server 2025 |
+| -------------------- | -------- | ------------ | ------------------- |
+| C++                  | yes      | yes          | yes                 |
+| C#                   | —        | —            | —                   |
+| D                    | —        | yes          | —                   |
+| Go                   | yes      | yes          | yes                 |
+| Java                 | yes      | yes          | yes                 |
+| JavaScript           | yes      | yes          | yes                 |
+| Julia                | —        | yes          | —                   |
+| LaTeX                | yes      | yes          | —                   |
+| Perl                 | yes      | yes          | yes                 |
+| Python               | yes      | yes          | yes                 |
+| Rust                 | yes      | yes          | —                   |
+| Shell                | yes      | yes          | —                   |
+
+The C#-named CI steps currently run the C++ demo, so C# is not covered by this matrix.
 
 ## Similar projects
 
