@@ -4,3 +4,4 @@
 
 # NOTE: Other versions of Bazel should work too. 
 # Nevertheless, this project was tested with the defined version.
+8.5.0
