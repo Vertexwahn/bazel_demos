@@ -1,0 +1,14 @@
+load("@aspect_rules_js//js:defs.bzl", "js_binary")
+load("@npm//:defs.bzl", "npm_link_all_packages")
+
+npm_link_all_packages(name = "node_modules")
+
+# HTTP server that serves the Three.js USD viewer
+js_binary(
+    name = "bin",
+    data = [
+        "index.html",
+        "//:node_modules/three",
+    ],
+    entry_point = "usd_viewer.js",
+)

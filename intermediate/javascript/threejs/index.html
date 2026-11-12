@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three.js USD Viewer</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #1a1a2e; overflow: hidden; font-family: sans-serif; }
+        canvas { display: block; }
+        #controls {
+            position: absolute; top: 16px; left: 16px;
+            background: rgba(0,0,0,0.7); color: #fff;
+            padding: 16px; border-radius: 8px;
+            z-index: 10;
+        }
+        #controls label { display: block; margin-bottom: 8px; cursor: pointer; }
+        #controls input[type="file"] { display: none; }
+        #controls .btn {
+            display: inline-block; padding: 8px 16px;
+            background: #4361ee; color: #fff; border: none;
+            border-radius: 4px; cursor: pointer; font-size: 14px;
+        }
+        #controls .btn:hover { background: #3a56d4; }
+        #info { margin-top: 10px; font-size: 12px; color: #aaa; }
+    </style>
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+        }
+    }
+    </script>
+</head>
+<body>
+    <div id="controls">
+        <label>
+            <span class="btn">Load USD / USDZ File</span>
+            <input type="file" id="fileInput" accept=".usd,.usda,.usdc,.usdz">
+        </label>
+        <div id="info">Drag &amp; drop or click to load a .usdz file</div>
+    </div>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { USDZLoader } from 'three/addons/loaders/USDZLoader.js';
+
+        // Scene setup
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x1a1a2e);
+
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(3, 3, 3);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.0;
+        document.body.appendChild(renderer.domElement);
+
+        // Controls
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+
+        const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
+        dirLight.position.set(5, 10, 7);
+        dirLight.castShadow = true;
+        scene.add(dirLight);
+
+        const hemiLight = new THREE.HemisphereLight(0x87ceeb, 0x362d59, 0.6);
+        scene.add(hemiLight);
+
+        // Grid helper
+        const grid = new THREE.GridHelper(10, 20, 0x444444, 0x333333);
+        scene.add(grid);
+
+        // USD Loader
+        const loader = new USDZLoader();
+        let currentModel = null;
+
+        function loadUSDZ(file) {
+            const info = document.getElementById('info');
+            info.textContent = `Loading ${file.name}...`;
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const contents = e.target.result;
+
+                try {
+                    if (currentModel) {
+                        scene.remove(currentModel);
+                        currentModel.traverse((child) => {
+                            if (child.geometry) child.geometry.dispose();
+                            if (child.material) {
+                                if (Array.isArray(child.material)) {
+                                    child.material.forEach(m => m.dispose());
+                                } else {
+                                    child.material.dispose();
+                                }
+                            }
+                        });
+                    }
+
+                    const group = loader.parse(contents);
+                    currentModel = group;
+
+                    // Auto-center and scale the model
+                    const box = new THREE.Box3().setFromObject(group);
+                    const center = box.getCenter(new THREE.Vector3());
+                    const size = box.getSize(new THREE.Vector3());
+                    const maxDim = Math.max(size.x, size.y, size.z);
+                    const scale = 2 / maxDim;
+
+                    group.scale.setScalar(scale);
+                    group.position.sub(center.multiplyScalar(scale));
+
+                    scene.add(group);
+
+                    // Fit camera
+                    camera.position.set(3, 3, 3);
+                    controls.target.set(0, 0, 0);
+                    controls.update();
+
+                    info.textContent = `Loaded: ${file.name}`;
+                } catch (err) {
+                    info.textContent = `Error loading file: ${err.message}`;
+                    console.error(err);
+                }
+            };
+
+            reader.readAsArrayBuffer(file);
+        }
+
+        // File input handler
+        document.getElementById('fileInput').addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                loadUSDZ(e.target.files[0]);
+            }
+        });
+
+        // Drag and drop
+        document.body.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+        });
+
+        document.body.addEventListener('drop', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (e.dataTransfer.files.length > 0) {
+                loadUSDZ(e.dataTransfer.files[0]);
+            }
+        });
+
+        // Resize handler
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+    </script>
+</body>
+</html>
