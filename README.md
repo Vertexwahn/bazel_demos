@@ -25,7 +25,7 @@ This repository is mainly organized into three parts:
 - [hello_world](/hello_world): Plain Hello World demos in different programming languages supported by the Bazel build system
 - [intermediate](/intermediate): Usage of different third-party dependencies and tools
 
-Furthermore, the [ci](/ci) directory contains build jobs to ensure that specific demos work across different operating systems.
+Furthermore, the [.github/workflows](/.github/workflows) directory contains build jobs to ensure that specific demos work across different operating systems.
 Not all demos that can be found here are also covered by CI.
 
 ## Hello World
