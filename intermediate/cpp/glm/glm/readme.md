@@ -978,11 +978,11 @@ generation distribution
 - Fixed bugs
 
 ---
-### GLM 0.9.0.1 - 2010-06-21
+### GLM 0.9.1.0 - 2010-06-21
 - Fixed extensions errors
 
 ---
-### GLM 0.9.0.1 - 2010-05-25
+### GLM 0.9.1.0 - 2010-05-25
 - Objective-C support
 - Fixed warnings
 - Updated documentation
