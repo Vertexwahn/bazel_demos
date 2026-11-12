@@ -3,4 +3,4 @@
     SPDX-License-Identifier: Apache-2.0
 """
 
-bazel_dep(name = "rules_perl", version = "0.4.2")
+bazel_dep(name = "rules_perl", version = "2.1.0")

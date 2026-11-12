@@ -3,7 +3,7 @@
     SPDX-License-Identifier: Apache-2.0
 """
 
-bazel_dep(name = "rules_julia", version = "0.0.1")
+bazel_dep(name = "rules_julia", version = "0.8.0")
 
 julia = use_extension("@rules_julia//julia:extensions.bzl", "julia")
 julia.toolchain(

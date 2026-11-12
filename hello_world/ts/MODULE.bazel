@@ -3,9 +3,9 @@
     SPDX-License-Identifier: Apache-2.0
 """
 
-bazel_dep(name = "aspect_rules_js", version = "2.3.8")
-bazel_dep(name = "aspect_rules_ts", version = "3.6.0")
-bazel_dep(name = "rules_nodejs", version = "6.4.0")
+bazel_dep(name = "aspect_rules_js", version = "3.6.0")
+bazel_dep(name = "aspect_rules_ts", version = "3.10.1")
+bazel_dep(name = "rules_nodejs", version = "6.7.7")
 
 # Override with specific commit
 git_override(

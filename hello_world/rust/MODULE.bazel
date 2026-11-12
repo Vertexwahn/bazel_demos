@@ -3,7 +3,7 @@
     SPDX-License-Identifier: Apache-2.0
 """
 
-bazel_dep(name = "rules_rust", version = "0.65.0")
+bazel_dep(name = "rules_rust", version = "0.75.0")
 
 rust = use_extension("@rules_rust//rust:extensions.bzl", "rust")
 rust.toolchain(

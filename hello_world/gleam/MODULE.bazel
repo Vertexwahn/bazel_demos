@@ -1,4 +1,4 @@
-bazel_dep(name = "rules_gleam", version = "0.1.13")
+bazel_dep(name = "rules_gleam", version = "0.1.14")
 
 gleam = use_extension("@rules_gleam//:extensions.bzl", "gleam")
 gleam.deps(gleam_toml = "//:gleam.toml")
