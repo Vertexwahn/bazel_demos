@@ -1,0 +1,2 @@
+# Keeps the occt.BUILD template addressable as //third_party:occt.BUILD.
+exports_files(["occt.BUILD"])

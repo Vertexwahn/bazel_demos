@@ -1,0 +1,22 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary")
+
+cc_binary(
+    name = "bottle",
+    srcs = ["main.cpp"],
+    copts = select({
+        "@platforms//os:windows": [
+            "/std:c++17",
+            "/EHsc",
+            "/bigobj",
+        ],
+        "//conditions:default": ["-std=c++17"],
+    }),
+    deps = ["@occt//:occt"],
+)
+
+genrule(
+    name = "bottle_obj",
+    outs = ["bottle.obj"],
+    cmd = "$(execpath :bottle) $@",
+    tools = [":bottle"],
+)

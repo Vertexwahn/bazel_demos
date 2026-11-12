@@ -1,0 +1,18 @@
+module(
+    name = "opencascade_bottle_demo",
+    version = "0.0.1",
+)
+
+bazel_dep(name = "rules_cc", version = "0.2.22")
+bazel_dep(name = "platforms", version = "1.0.0")
+bazel_dep(name = "bazel_skylib", version = "1.7.1")
+
+http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
+    name = "occt",
+    build_file = "//third_party:occt.BUILD",
+    sha256 = "0d6913eae4bcc09a3653ceced6dda1aec11c35a1513d4c06762c9b002092c68a",
+    strip_prefix = "OCCT-8_0_1",
+    urls = ["https://github.com/Open-Cascade-SAS/OCCT/archive/refs/tags/V8_0_1.tar.gz"],
+)
