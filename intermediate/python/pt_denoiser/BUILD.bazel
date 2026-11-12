@@ -1,0 +1,18 @@
+load("@rules_python//python:defs.bzl", "py_binary")
+load("@rules_python//python:pip.bzl", "compile_pip_requirements")
+
+compile_pip_requirements(
+    name = "requirements",
+    src = "requirements.in",
+    requirements_txt = "requirements_lock.txt",
+)
+
+py_binary(
+    name = "train_denoiser",
+    srcs = ["train_denoiser.py"],
+    deps = [
+        "@pypi//numpy",
+        "@pypi//openexr",
+        "@pypi//torch",
+    ],
+)
