@@ -1,5 +1,5 @@
 <!--
-SPDX-FileCopyrightText: 2022-2025 Julian Amann <dev@vertexwahn.de>
+SPDX-FileCopyrightText: 2022-2026 Julian Amann <dev@vertexwahn.de>
 SPDX-License-Identifier: Apache-2.0
 -->
 
@@ -36,7 +36,7 @@ The following table shows which examples are covered by the current CI matrix. A
 | Language support on  | macOS 26 | Ubuntu 26.04 | Windows Server 2025 |
 | -------------------- | -------- | ------------ | ------------------- |
 | C++                  | yes      | yes          | yes                 |
-| C#                   | —        | —            | —                   |
+| C#                   | —        | yes          | —                   |
 | D                    | —        | yes          | —                   |
 | Go                   | yes      | yes          | yes                 |
 | Java                 | yes      | yes          | yes                 |
@@ -48,7 +48,7 @@ The following table shows which examples are covered by the current CI matrix. A
 | Rust                 | yes      | yes          | —                   |
 | Shell                | yes      | yes          | —                   |
 
-The C#-named CI steps currently run the C++ demo, so C# is not covered by this matrix.
+The C# demo is currently tested on Ubuntu 26.04 only.
 
 ## Similar projects
 

@@ -154,10 +154,8 @@ jobs:
           bazelisk run //:hello_world
           bazelisk run --enable_bzlmod //:hello_world
       - name: Hello World C#
-        working-directory: hello_world/cpp
-        run: |
-          bazelisk build //...
-          bazelisk run //:hello_world
+        working-directory: hello_world/csharp
+        run: bazelisk run --spawn_strategy=standalone //:hello_world
       - name: Hello World D
         working-directory: hello_world/d
         run: bazelisk run //:hello_world
