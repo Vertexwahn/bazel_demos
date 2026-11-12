@@ -5,9 +5,9 @@
 
 load("@container_structure_test//:defs.bzl", "container_structure_test")
 load("@emsdk//emscripten_toolchain:wasm_rules.bzl", "wasm_cc_binary")
-load("@rules_cc//cc:defs.bzl", "cc_binary")
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
 load("@rules_go//go:def.bzl", "go_binary")
-load("@rules_oci//oci:defs.bzl", "oci_image", "oci_tarball")
+load("@rules_oci//oci:defs.bzl", "oci_image", "oci_load")
 load("@rules_pkg//:mappings.bzl", "pkg_files")
 load("@rules_pkg//:pkg.bzl", "pkg_tar")
 
@@ -42,6 +42,12 @@ wasm_cc_binary(
 # Desktop App
 #-------------------------------------------------------------------------------------
 
+cc_library(
+    name = "system_x11",
+    linkopts = ["-lX11"],
+    visibility = ["//visibility:private"],
+)
+
 cc_binary(
     name = "main",
     srcs = [
@@ -52,7 +58,7 @@ cc_binary(
         "//glad",
         "@glfw",
     ] + select({
-        "@platforms//os:linux": ["@system_libs//:x11"],
+        "@platforms//os:linux": [":system_x11"],
         "@platforms//os:windows": [],
         "@bazel_tools//src/conditions:darwin": [],
     }),
@@ -109,7 +115,7 @@ oci_image(
     tars = [":app_layer"],
 )
 
-oci_tarball(
+oci_load(
     name = "tarball",
     image = ":image",
     repo_tags = ["vertexwahn/emscripten_glfw:v0.0.1"],

@@ -6,8 +6,7 @@
 #build --symlink_prefix=/ # Out of source build
 
 # Bzlmod
-common --enable_bzlmod # default in Bazel 7.0
-common --enable_workspace
+common --enable_bzlmod
 
 # GCC 9.3
 build:gcc9 --cxxopt=-std=c++2a

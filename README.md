@@ -30,8 +30,10 @@ Not all demos that can be found here are also covered by CI.
 
 ## Hello World
 
-Under [hello_world](/hello_world) you can find Hello World examples in misc programming languages using Bazel.
-The following table shows which examples are covered by the current CI matrix. A dash means the example is not tested on that OS.
+Under [hello_world](/hello_world), 
+you can find Hello World examples in miscellaneous programming languages using Bazel.
+The following table shows which examples the current CI matrix covers.
+A dash means the example is not tested on that OS.
 
 | Language support on  | macOS 26 | Ubuntu 26.04 | Windows Server 2025 |
 | -------------------- | -------- | ------------ | ------------------- |
