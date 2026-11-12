@@ -1,0 +1,2 @@
+# rules_erlang 3.16.0 uses empty globs to detect optional files.
+build --incompatible_disallow_empty_glob=false
