@@ -3,18 +3,12 @@
     SPDX-License-Identifier: Apache-2.0
 """
 
-load(
-    "@rules_haskell//haskell:defs.bzl",
-    "haskell_binary",
-    "haskell_toolchain_library",
-)
+load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
 
 package(default_visibility = ["//visibility:public"])
 
-haskell_toolchain_library(name = "base")
-
-haskell_binary(
+sh_binary(
     name = "HelloWorld",
-    srcs = [":HelloWorld.hs"],
-    deps = [":base"],
+    srcs = ["run_hello_world.sh"],
+    data = ["HelloWorld.hs"],
 )

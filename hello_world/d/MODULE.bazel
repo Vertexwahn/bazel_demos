@@ -1,0 +1,7 @@
+module(name = "hello_world_d")
+
+bazel_dep(
+    name = "rules_d",
+    version = "0.12.1",
+    repo_name = "io_bazel_rules_d",
+)

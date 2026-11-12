@@ -1,5 +1,3 @@
-bazel_dep(name = "rules_gleam", version = "0.1.14")
+module(name = "hello_world_gleam")
 
-gleam = use_extension("@rules_gleam//:extensions.bzl", "gleam")
-gleam.deps(gleam_toml = "//:gleam.toml")
-use_repo(gleam, "hex_gleam_json", "hex_gleam_stdlib", "hex_gleeunit")
+bazel_dep(name = "rules_shell", version = "0.6.1")

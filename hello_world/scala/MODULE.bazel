@@ -1,0 +1,7 @@
+module(name = "hello_world_scala")
+
+bazel_dep(
+    name = "rules_scala",
+    version = "7.4.1",
+    repo_name = "io_bazel_rules_scala",
+)

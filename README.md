@@ -38,15 +38,21 @@ The following table shows which examples are covered by the current CI matrix. A
 | C++                  | yes      | yes          | yes                 |
 | C#                   | —        | yes          | —                   |
 | D                    | —        | yes          | —                   |
+| Erlang               | —        | yes          | —                   |
+| Fortran              | —        | yes          | —                   |
+| Gleam                | —        | yes          | —                   |
 | Go                   | yes      | yes          | yes                 |
+| Haskell              | —        | yes          | —                   |
 | Java                 | yes      | yes          | yes                 |
 | JavaScript           | yes      | yes          | yes                 |
 | Julia                | —        | yes          | —                   |
 | LaTeX                | yes      | yes          | —                   |
 | Perl                 | yes      | yes          | yes                 |
 | Python               | yes      | yes          | yes                 |
+| R                    | —        | yes          | —                   |
 | Rust                 | yes      | yes          | —                   |
 | Shell                | yes      | yes          | —                   |
+| Swift                | —        | yes          | —                   |
 
 The C# demo is currently tested on Ubuntu 26.04 only.
 

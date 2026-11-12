@@ -1,0 +1,4 @@
+module(name = "hello_world_csharp")
+
+bazel_dep(name = "bazel_skylib", version = "1.7.1")
+bazel_dep(name = "rules_dotnet", version = "0.22.2")

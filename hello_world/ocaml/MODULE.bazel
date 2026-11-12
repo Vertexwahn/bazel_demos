@@ -1,0 +1,14 @@
+module(name = "hello_world_ocaml")
+
+http_archive = use_repo_rule(
+    "@bazel_tools//tools/build_defs/repo:http.bzl",
+    "http_archive",
+)
+
+http_archive(
+    name = "obazl_rules_ocaml",
+    strip_prefix = "rules_ocaml-22ac0e7d7ca5f331213c0a792cd9f58c03bddabe",
+    urls = [
+        "https://github.com/obazl/rules_ocaml/archive/22ac0e7d7ca5f331213c0a792cd9f58c03bddabe.tar.gz",
+    ],
+)

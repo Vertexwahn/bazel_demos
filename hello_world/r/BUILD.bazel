@@ -1,11 +1,7 @@
-"""
-    SPDX-FileCopyrightText: 2022 Julian Amann <dev@vertexwahn.de>
-    SPDX-License-Identifier: Apache-2.0
-"""
+load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
 
-load("@com_grail_rules_r//R:defs.bzl", "r_binary")
-
-r_binary(
+sh_binary(
     name = "HelloWorld",
-    src = "HelloWorld.R",
+    srcs = ["run_hello_world.sh"],
+    data = ["HelloWorld.R"],
 )

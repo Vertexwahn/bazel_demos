@@ -1,0 +1,7 @@
+module(name = "hello_world_ruby")
+
+bazel_dep(
+    name = "rules_ruby",
+    version = "0.29.0",
+    repo_name = "bazelruby_rules_ruby",
+)

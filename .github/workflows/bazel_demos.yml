@@ -159,9 +159,35 @@ jobs:
       - name: Hello World D
         working-directory: hello_world/d
         run: bazelisk run //:hello_world
+      - name: Set up Erlang/OTP
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y erlang-base
+      - name: Hello World Erlang
+        working-directory: hello_world/erlang
+        run: bazelisk run //:hello_world
+      - name: Hello World Fortran
+        working-directory: hello_world/fortran
+        run: bazelisk run //:hello_world
+      - uses: erlef/setup-beam@v1
+        with:
+          gleam-version: "1.19.2"
+      - name: Download Gleam dependencies
+        working-directory: hello_world/gleam
+        run: gleam deps download
+      - name: Hello World Gleam
+        working-directory: hello_world/gleam
+        run: bazelisk run //:main
       - name: Hello World Go
         working-directory: hello_world/go
         run: bazelisk run //:hello_world
+      - uses: haskell-actions/setup@v2
+        with:
+          ghc-version: "9.10.1"
+          cabal-update: false
+      - name: Hello World Haskell
+        working-directory: hello_world/haskell
+        run: bazelisk run //:HelloWorld
       - name: Hello World Java
         working-directory: hello_world/java
         run: bazelisk run //:hello_world
@@ -184,6 +210,12 @@ jobs:
         run: |
           bazelisk build //...
           bazelisk run //:hello_world
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: "release"
+      - name: Hello World R
+        working-directory: hello_world/r
+        run: bazelisk run //:HelloWorld
       - name: Hello World Rust
         working-directory: hello_world/rust
         run: |
@@ -194,6 +226,14 @@ jobs:
         run: |
           bazelisk build //...
           bazelisk run //:hello_world
+      - uses: swift-actions/setup-swift@v3
+        with:
+          swift-version: "latest"
+      - name: Hello World Swift
+        working-directory: hello_world/swift
+        env:
+          CC: clang
+        run: bazelisk run //:hello_world
 
   hello-world-windows-2025:
     name: "Hello World: Windows Server 2025"
