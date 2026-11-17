@@ -28,7 +28,7 @@ This repository is mainly organized into three parts:
 Furthermore, the [.github/workflows](/.github/workflows) directory contains build jobs to ensure that specific demos work across different operating systems.
 Not all demos that can be found here are also covered by CI.
 
-## Hello World
+### Hello World Demos
 
 Under [hello_world](/hello_world), 
 you can find Hello World examples in miscellaneous programming languages using Bazel.
@@ -56,7 +56,12 @@ A dash means the example is not tested on that OS.
 | Shell                | yes      | yes          | —                   |
 | Swift                | —        | yes          | —                   |
 
-The C# demo is currently tested on Ubuntu 26.04 only.
+Pro tip: Ask you favorite AI to come up with an example in your desired language and platform.  
+
+### Bigger examples
+
+- [Vertexwahn/LichtFeld-Studio-bazel](https://github.com/Vertexwahn/LichtFeld-Studio-bazel): [LichtFeld Studio](https://lichtfeld.io/) build with Bazel
+- [Vertexwahn/pbrt-v4-bazel](https://github.com/Vertexwahn/pbrt-v4-bazel): [pbrt, Version 4](https://github.com/mmp/pbrt-v4) build with Bazel
 
 ## Similar projects
 

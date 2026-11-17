@@ -5,4 +5,4 @@
 
 module(name = "hello_world_haskell")
 
-bazel_dep(name = "rules_shell", version = "0.6.1")
+bazel_dep(name = "rules_shell", version = "0.8.0")
