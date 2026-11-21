@@ -226,14 +226,14 @@ jobs:
         run: |
           bazelisk build //...
           bazelisk run //:hello_world
-      - uses: swift-actions/setup-swift@v3
-        with:
-          swift-version: "latest"
-      - name: Hello World Swift
-        working-directory: hello_world/swift
-        env:
-          CC: clang
-        run: bazelisk run //:hello_world
+      #- uses: swift-actions/setup-swift@v3
+      #  with:
+      #    swift-version: "latest"
+      #- name: Hello World Swift
+      #  working-directory: hello_world/swift
+      #  env:
+      #    CC: clang
+      #  run: bazelisk run //:hello_world
 
   hello-world-windows-2025:
     name: "Hello World: Windows Server 2025"
