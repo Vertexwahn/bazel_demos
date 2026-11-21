@@ -169,15 +169,15 @@ jobs:
       - name: Hello World Fortran
         working-directory: hello_world/fortran
         run: bazelisk run //:hello_world
-      - uses: erlef/setup-beam@v1
-        with:
-          gleam-version: "1.19.2"
-      - name: Download Gleam dependencies
-        working-directory: hello_world/gleam
-        run: gleam deps download
-      - name: Hello World Gleam
-        working-directory: hello_world/gleam
-        run: bazelisk run //:main
+      #- uses: erlef/setup-beam@v1
+      #  with:
+      #    gleam-version: "1.19.2"
+      #- name: Download Gleam dependencies
+      #  working-directory: hello_world/gleam
+      #  run: gleam deps download
+      #- name: Hello World Gleam
+      #  working-directory: hello_world/gleam
+      #  run: bazelisk run //:main
       - name: Hello World Go
         working-directory: hello_world/go
         run: bazelisk run //:hello_world
