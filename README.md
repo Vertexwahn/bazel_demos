@@ -58,7 +58,7 @@ A dash means the example is not tested on that OS.
 
 Pro tip: Ask you favorite AI to come up with an example in your desired language and platform.  
 
-### Bigger examples
+### More complex examples
 
 - [Vertexwahn/LichtFeld-Studio-bazel](https://github.com/Vertexwahn/LichtFeld-Studio-bazel): [LichtFeld Studio](https://lichtfeld.io/) build with Bazel
 - [Vertexwahn/pbrt-v4-bazel](https://github.com/Vertexwahn/pbrt-v4-bazel): [pbrt, Version 4](https://github.com/mmp/pbrt-v4) build with Bazel
