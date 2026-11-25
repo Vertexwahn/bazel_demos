@@ -260,7 +260,12 @@ jobs:
           bazelisk run //:hello_world
           bazelisk run --enable_bzlmod //:hello_world
       - name: Hello World C#
-        working-directory: hello_world/cpp
+        working-directory: hello_world/csharp
+        run: |
+          bazelisk build //...
+          bazelisk run //:hello_world
+      - name: Hello World D
+        working-directory: hello_world/d
         run: |
           bazelisk build //...
           bazelisk run //:hello_world
@@ -279,6 +284,11 @@ jobs:
         run: |
           bazelisk build --enable_runfiles //...
           bazelisk run --enable_runfiles //:hello_world
+      - name: Hello World Julia
+        working-directory: hello_world/julia
+        run: |
+          bazelisk build //...
+          bazelisk run //:hello_world
       - name: Hello World Perl
         working-directory: hello_world/perl
         run: |
@@ -286,6 +296,16 @@ jobs:
           bazelisk run //:hello_world
       - name: Hello World Python
         working-directory: hello_world/python
+        run: |
+          bazelisk build //...
+          bazelisk run //:hello_world
+      - name: Hello World Rust
+        working-directory: hello_world/rust
+        run: |
+          bazelisk build //...
+          bazelisk run //:hello_world
+      - name: Hello World Shell
+        working-directory: hello_world/shell
         run: |
           bazelisk build //...
           bazelisk run //:hello_world

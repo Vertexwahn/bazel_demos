@@ -1,0 +1,11 @@
+"""
+    SPDX-FileCopyrightText: 2026 Julian Amann <dev@vertexwahn.de>
+    SPDX-License-Identifier: Apache-2.0
+"""
+
+module(
+    name = "mylib",
+    version = "1.0",
+)
+
+bazel_dep(name = "rules_cc", version = "0.2.28")

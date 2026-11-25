@@ -19,8 +19,9 @@ Most of the things you find here are not production-ready but can serve as a sta
 
 ## Organization of this repo
 
-This repository is mainly organized into three parts:
+This repository is mainly organized into four parts:
 
+- [bug_reports](/bug_reports): Minimal examples that reproduce bugs in Bazel or rules, with instructions
 - [core_principles](/core_principles): Core principles of Bazel with no focus on a specific programming language
 - [hello_world](/hello_world): Plain Hello World demos in different programming languages supported by the Bazel build system
 - [intermediate](/intermediate): Usage of different third-party dependencies and tools
@@ -38,8 +39,8 @@ A dash means the example is not tested on that OS.
 | Language support on  | macOS 26 | Ubuntu 26.04 | Windows Server 2025 |
 | -------------------- | -------- | ------------ | ------------------- |
 | C++                  | yes      | yes          | yes                 |
-| C#                   | —        | yes          | —                   |
-| D                    | —        | yes          | —                   |
+| C#                   | —        | yes          | yes                 |
+| D                    | —        | yes          | yes                 |
 | Erlang               | —        | yes          | —                   |
 | Fortran              | —        | yes          | —                   |
 | Gleam                | —        | yes          | —                   |
@@ -47,13 +48,13 @@ A dash means the example is not tested on that OS.
 | Haskell              | —        | yes          | —                   |
 | Java                 | yes      | yes          | yes                 |
 | JavaScript           | yes      | yes          | yes                 |
-| Julia                | —        | yes          | —                   |
+| Julia                | —        | yes          | yes                 |
 | LaTeX                | yes      | yes          | —                   |
 | Perl                 | yes      | yes          | yes                 |
 | Python               | yes      | yes          | yes                 |
 | R                    | —        | yes          | —                   |
-| Rust                 | yes      | yes          | —                   |
-| Shell                | yes      | yes          | —                   |
+| Rust                 | yes      | yes          | yes                 |
+| Shell                | yes      | yes          | yes                 |
 | Swift                | —        | yes          | —                   |
 
 Pro tip: Ask you favorite AI to come up with an example in your desired language and platform.  

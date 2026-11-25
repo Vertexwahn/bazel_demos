@@ -1,0 +1,32 @@
+"""
+    SPDX-FileCopyrightText: 2026 Julian Amann <dev@vertexwahn.de>
+    SPDX-License-Identifier: Apache-2.0
+"""
+
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+# 2.0 keeps the target name but no longer exports scan.h. The 1.0 copy of scan.h
+# in this target's _virtual_includes directory is not deleted by Bazel.
+cc_library(
+    name = "mylib_hdrs",
+    hdrs = ["include/mylib.h"],
+    strip_include_prefix = "include",
+)
+
+# scan.h became internal and changed its signature.
+cc_library(
+    name = "mylib_hdrs_private",
+    hdrs = ["private/scan.h"],
+    strip_include_prefix = "private",
+)
+
+cc_library(
+    name = "mylib",
+    srcs = [
+        "src/mylib.c",
+        "src/scan.c",
+    ],
+    implementation_deps = [":mylib_hdrs_private"],
+    visibility = ["//visibility:public"],
+    deps = [":mylib_hdrs"],
+)

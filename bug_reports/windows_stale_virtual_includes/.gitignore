@@ -1,0 +1,4 @@
+# Lets the example be pushed to its own repository unchanged; the bazel-* symlinks
+# and the lockfile are build artifacts.
+bazel-*
+MODULE.bazel.lock

@@ -1,0 +1,17 @@
+"""
+    SPDX-FileCopyrightText: 2026 Julian Amann <dev@vertexwahn.de>
+    SPDX-License-Identifier: Apache-2.0
+"""
+
+module(name = "windows_stale_virtual_includes")
+
+bazel_dep(name = "rules_cc", version = "0.2.28")
+bazel_dep(name = "mylib")
+
+# Stands in for a dependency from a registry: "upgrading" mylib means changing
+# this path from mylib-1.0 to mylib-2.0. The repository stays @@mylib+ and the
+# target labels stay the same, exactly like a BCR version bump.
+local_path_override(
+    module_name = "mylib",
+    path = "mylib-1.0",
+)

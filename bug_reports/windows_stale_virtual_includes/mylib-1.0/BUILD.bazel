@@ -1,0 +1,27 @@
+"""
+    SPDX-FileCopyrightText: 2026 Julian Amann <dev@vertexwahn.de>
+    SPDX-License-Identifier: Apache-2.0
+"""
+
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+# 1.0 exports scan.h together with the public header (copied to
+# bazel-out/<cfg>/bin/_virtual_includes/<hash of @@mylib+//:mylib_hdrs>/).
+cc_library(
+    name = "mylib_hdrs",
+    hdrs = [
+        "include/mylib.h",
+        "include/scan.h",
+    ],
+    strip_include_prefix = "include",
+)
+
+cc_library(
+    name = "mylib",
+    srcs = [
+        "src/mylib.c",
+        "src/scan.c",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [":mylib_hdrs"],
+)
