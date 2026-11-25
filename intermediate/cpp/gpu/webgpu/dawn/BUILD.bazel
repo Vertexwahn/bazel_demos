@@ -1,89 +1,120 @@
-"""
-    SPDX-FileCopyrightText: 2022 Julian Amann <dev@vertexwahn.de>
-    SPDX-License-Identifier: Apache-2.0
-"""
+# SPDX-License-Identifier: Apache-2.0
 
-load("@rules_cc//cc:defs.bzl", "cc_binary")
+load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 load("@emsdk//emscripten_toolchain:wasm_rules.bzl", "wasm_cc_binary")
-load("@rules_qt//:qt.bzl", "qt_cc_binary", "qt_cc_library")
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "objc_library")
 
-qt_cc_library(
-    name = "render_widget",
-    srcs = [
-        "qt/render_widget.cpp",
+_CXX20 = select({
+    "@platforms//os:windows": [
+        "/std:c++20",
+        "/Zc:__cplusplus",
+        "/Zc:preprocessor",
     ],
-    hdrs = ["qt/render_widget.h"],
-    deps = [
-        "@rules_qt//:qt_widgets",
-    ],
+    "//conditions:default": ["-std=c++20"],
+})
+
+alias(
+    name = "dawn",
+    actual = "@dawn_source//:webgpu_dawn",
 )
 
-qt_cc_binary(
-    name = "DawnDemo",
-    srcs = [
-        "defines.h",
-        "main.cpp",
-        "qt/webgpu.cpp",
-        "qt/window.cpp",
-        "webgpu.h",
-        "window.h",
+objc_library(
+    name = "metal_surface",
+    srcs = ["metal_surface.mm"],
+    hdrs = ["desktop_surface.h"],
+    copts = ["-std=c++20"],
+    sdk_frameworks = [
+        "Cocoa",
+        "QuartzCore",
     ],
+    target_compatible_with = ["@platforms//os:macos"],
     deps = [
-        "//:render_widget",
-        "@dawn",
-        "@rules_qt//:qt_core",
-        "@rules_qt//:qt_qml",
-        "@rules_qt//:qt_widgets",
-    ],
-)
-
-cc_binary(
-    name = "DawnDemoGlfw",
-    srcs = [
-        "dawn_with_glfw.cpp",
-    ],
-    deps = [
-        "@dawn",
+        ":dawn",
         "@glfw",
-        "@vulkan_sdk//:vulkan",
+    ],
+)
+
+cc_library(
+    name = "desktop_surface",
+    srcs = select({
+        "@platforms//os:macos": [],
+        "//conditions:default": ["desktop_surface.cpp"],
+    }),
+    hdrs = ["desktop_surface.h"],
+    copts = _CXX20,
+    deps = [
+        ":dawn",
+        "@glfw",
     ] + select({
-        "@platforms//os:linux": ["@system_libs//:x11"],
-        "@platforms//os:windows": [],
-        "@bazel_tools//src/conditions:darwin": [],
+        "@platforms//os:macos": [":metal_surface"],
+        "//conditions:default": [],
     }),
 )
 
 cc_binary(
+    name = "DawnDemoGlfw",
+    srcs = ["main.cpp"],
+    copts = _CXX20,
+    linkopts = select({
+        "@platforms//os:windows": [
+            "user32.lib",
+            "dxguid.lib",
+            "onecore_apiset.lib",
+        ],
+        "@platforms//os:macos": [
+            "-framework Metal",
+            "-framework QuartzCore",
+            "-framework IOSurface",
+            "-framework IOKit",
+        ],
+        "//conditions:default": [
+            "-ldl",
+            "-lpthread",
+        ],
+    }),
+    deps = [
+        ":dawn",
+        ":desktop_surface",
+        "@glfw",
+    ],
+)
+
+alias(
+    name = "DawnDemo",
+    actual = ":DawnDemoGlfw",
+)
+
+cc_binary(
     name = "index",
-    srcs = [
-        "defines.h",
-        "ems/webgpu.cpp",
-        "ems/window.cpp",
-        "main.cpp",
-        "webgpu.h",
-        "window.h",
-    ],
-    copts = [
-        "-Wno-unused-variable",
-        "-Wno-unused-but-set-variable",
-        "-Wno-unused-function",
-        "-fexceptions",
-    ],
-    data = ["ems/shell.html"],
+    srcs = ["main.cpp"],
+    copts = ["-std=c++20"],
     linkopts = [
-        "-s USE_GLFW=3",
-        "-s USE_WEBGPU=1",
-        "-s WASM=1",
-        "-s ALLOW_MEMORY_GROWTH=1",
-        "-s NO_EXIT_RUNTIME=0",
-        "-s ASSERTIONS=1",
-        "-s ERROR_ON_UNDEFINED_SYMBOLS=0",
-        "--bind",
+        "-sALLOW_MEMORY_GROWTH=1",
+        "-sASSERTIONS=1",
     ],
     tags = ["manual"],
+    deps = ["@emdawnwebgpu"],
 )
 
 wasm_cc_binary(
-    name = "index-wasm",
+    name = "index-wasm-binary",
     cc_target = ":index",
+    outputs = [
+        "index-wasm/index.js",
+        "index-wasm/index.wasm",
+    ],
+)
+
+copy_file(
+    name = "browser-shell",
+    src = "index.html",
+    out = "index-wasm/index.html",
+)
+
+filegroup(
+    name = "index-wasm",
+    srcs = [
+        ":browser-shell",
+        ":index-wasm-binary",
+    ],
 )

@@ -1,5 +1,0 @@
-# Pip checks downloaded package archives against local hashes to protect against remote tampering
-# Read https://pip.pypa.io/en/stable/cli/pip_install/#hash-checking-mode for more information
-
-jinja2==2.11.3
-MarkupSafe==2.0.1

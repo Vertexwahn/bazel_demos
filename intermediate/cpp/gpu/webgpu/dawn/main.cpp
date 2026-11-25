@@ -1,334 +1,319 @@
 /*
- *  SPDX-FileCopyrightText: 2022 Julian Amann <dev@vertexwahn.de>
- *  SPDX-License-Identifier: Apache-2.0
+ * SPDX-FileCopyrightText: 2022 Julian Amann <dev@vertexwahn.de>
+ * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <webgpu/webgpu.h>
+#include <webgpu/webgpu_cpp.h>
+
+#include <algorithm>
+#include <chrono>
+#include <cstring>
 #include <iostream>
+#include <string>
+#include <utility>
 
-//------------------------------------------------------
-// main.cpp
-#include "webgpu.h"
-
-#include <string.h>
-
-WGPUDevice device;
-WGPUQueue queue;
-WGPUSwapChain swapchain;
-
-WGPURenderPipeline pipeline;
-WGPUBuffer vertBuf; // vertex buffer with triangle position and colours
-WGPUBuffer indxBuf; // index buffer
-WGPUBuffer uRotBuf; // uniform buffer (containing the rotation angle)
-WGPUBindGroup bindGroup;
-
-/**
- * Current rotation angle (in degrees, updated per frame).
- */
-float rot_deg = 0.0f;
-
-/**
- * WGSL equivalent of \c triangle_vert_spirv.
- */
-static char const triangle_vert_wgsl[] = R"(
-	struct VertexIn {
-		@location(0) aPos: vec2<f32>,
-		@location(1) aCol: vec3<f32>,
-	};
-	struct VertexOut {
-		@location(0) vCol : vec3<f32>,
-		@builtin(position) Position : vec4<f32>,
-	};
-	struct Rotation {
-		@location(0) degs : f32,
-	};
-	@group(0) @binding(0) var<uniform> uRot : Rotation;
-	@vertex
-	fn main(input : VertexIn) -> VertexOut {
-		var rads : f32 = radians(uRot.degs);
-		var cosA : f32 = cos(rads);
-		var sinA : f32 = sin(rads);
-		var rot : mat3x3<f32> = mat3x3<f32>(
-			vec3<f32>( cosA, sinA, 0.0),
-			vec3<f32>(-sinA, cosA, 0.0),
-			vec3<f32>( 0.0,  0.0,  1.0));
-		var output : VertexOut;
-		output.Position = vec4<f32>(rot * vec3<f32>(input.aPos, 1.0), 1.0);
-		output.vCol = input.aCol;
-		return output;
-	}
-)";
-
-/**
- * WGSL equivalent of \c triangle_frag_spirv.
- */
-static char const triangle_frag_wgsl[] = R"(
-	@fragment
-	fn main(@location(0) vCol : vec3<f32>) -> @location(0) vec4<f32> {
-		return vec4<f32>(vCol, 1.0);
-	}
-)";
-
-/**
- * Helper to create a shader from SPIR-V IR.
- *
- * \param[in] code shader source (output using the \c -V \c -x options in \c glslangValidator)
- * \param[in] size size of \a code in bytes
- * \param[in] label optional shader name
- */
-/*static*/ WGPUShaderModule create_shader(const uint32_t* code, uint32_t size, const char* label = nullptr) {
-	WGPUShaderModuleSPIRVDescriptor spirv = {};
-	spirv.chain.sType = WGPUSType_ShaderModuleSPIRVDescriptor;
-	spirv.codeSize = size / sizeof(uint32_t);
-	spirv.code = code;
-	WGPUShaderModuleDescriptor desc = {};
-	desc.nextInChain = reinterpret_cast<WGPUChainedStruct*>(&spirv);
-	desc.label = label;
-	return wgpuDeviceCreateShaderModule(device, &desc);
-}
-
-/**
- * Helper to create a shader from WGSL source.
- *
- * \param[in] code WGSL shader source
- * \param[in] label optional shader name
- */
-WGPUShaderModule create_shader(const char* const code, const char* label = nullptr) {
-	WGPUShaderModuleWGSLDescriptor wgsl = {};
-	wgsl.chain.sType = WGPUSType_ShaderModuleWGSLDescriptor;
-	wgsl.source = code;
-	WGPUShaderModuleDescriptor desc = {};
-	desc.nextInChain = reinterpret_cast<WGPUChainedStruct*>(&wgsl);
-	desc.label = label;
-	return wgpuDeviceCreateShaderModule(device, &desc);
-}
-
-/**
- * Helper to create a buffer.
- *
- * \param[in] data pointer to the start of the raw data
- * \param[in] size number of bytes in \a data
- * \param[in] usage type of buffer
- */
-WGPUBuffer create_buffer(const void* data, size_t size, WGPUBufferUsage usage) {
-	WGPUBufferDescriptor desc = {};
-	desc.usage = WGPUBufferUsage_CopyDst | usage;
-	desc.size  = size;
-	WGPUBuffer buffer = wgpuDeviceCreateBuffer(device, &desc);
-	wgpuQueueWriteBuffer(queue, buffer, 0, data, size);
-	return buffer;
-}
-
-/**
- * Bare minimum pipeline to draw a triangle using the above shaders.
- */
-static void create_pipeline_and_buffers() {
-	// compile shaders
-	// NOTE: these are now the WGSL shaders (tested with Dawn and Chrome Canary)
-	WGPUShaderModule vertMod = create_shader(triangle_vert_wgsl);
-	WGPUShaderModule fragMod = create_shader(triangle_frag_wgsl);
-
-	WGPUBufferBindingLayout buf = {};
-	buf.type = WGPUBufferBindingType_Uniform;
-
-	// bind group layout (used by both the pipeline layout and uniform bind group, released at the end of this function)
-	WGPUBindGroupLayoutEntry bglEntry = {};
-	bglEntry.binding = 0;
-	bglEntry.visibility = WGPUShaderStage_Vertex;
-	bglEntry.buffer = buf;
-
-	WGPUBindGroupLayoutDescriptor bglDesc = {};
-	bglDesc.entryCount = 1;
-	bglDesc.entries = &bglEntry;
-	WGPUBindGroupLayout bindGroupLayout = wgpuDeviceCreateBindGroupLayout(device, &bglDesc);
-
-	// pipeline layout (used by the render pipeline, released after its creation)
-	WGPUPipelineLayoutDescriptor layoutDesc = {};
-	layoutDesc.bindGroupLayoutCount = 1;
-	layoutDesc.bindGroupLayouts = &bindGroupLayout;
-	WGPUPipelineLayout pipelineLayout = wgpuDeviceCreatePipelineLayout(device, &layoutDesc);
-
-	// describe buffer layouts
-	WGPUVertexAttribute vertAttrs[2] = {};
-	vertAttrs[0].format = WGPUVertexFormat_Float32x2;
-	vertAttrs[0].offset = 0;
-	vertAttrs[0].shaderLocation = 0;
-	vertAttrs[1].format = WGPUVertexFormat_Float32x3;
-	vertAttrs[1].offset = 2 * sizeof(float);
-	vertAttrs[1].shaderLocation = 1;
-	WGPUVertexBufferLayout vertexBufferLayout = {};
-	vertexBufferLayout.arrayStride = 5 * sizeof(float);
-	vertexBufferLayout.attributeCount = 2;
-	vertexBufferLayout.attributes = vertAttrs;
-
-	// Fragment state
-	WGPUBlendState blend = {};
-	blend.color.operation = WGPUBlendOperation_Add;
-	blend.color.srcFactor = WGPUBlendFactor_One;
-	blend.color.dstFactor = WGPUBlendFactor_One;
-	blend.alpha.operation = WGPUBlendOperation_Add;
-	blend.alpha.srcFactor = WGPUBlendFactor_One;
-	blend.alpha.dstFactor = WGPUBlendFactor_One;
-
-	WGPUColorTargetState colorTarget = {};
-	colorTarget.format = webgpu::getSwapChainFormat(device);
-	colorTarget.blend = &blend;
-	colorTarget.writeMask = WGPUColorWriteMask_All;
-
-	WGPUFragmentState fragment = {};
-	fragment.module = fragMod;
-	fragment.entryPoint = "main";
-	fragment.targetCount = 1;
-	fragment.targets = &colorTarget;
-
-	WGPURenderPipelineDescriptor desc = {};
-	desc.fragment = &fragment;
-
-	// Other state
-	desc.layout = pipelineLayout;
-	desc.depthStencil = nullptr;
-
-	desc.vertex.module = vertMod;
-	desc.vertex.entryPoint = "main";
-	desc.vertex.bufferCount = 1;//0;
-	desc.vertex.buffers = &vertexBufferLayout;
-
-	desc.multisample.count = 1;
-	desc.multisample.mask = 0xFFFFFFFF;
-	desc.multisample.alphaToCoverageEnabled = false;
-
-	desc.primitive.frontFace = WGPUFrontFace_CCW;
-	desc.primitive.cullMode = WGPUCullMode_None;
-	desc.primitive.topology = WGPUPrimitiveTopology_TriangleList;
-	desc.primitive.stripIndexFormat = WGPUIndexFormat_Undefined;
-
-	pipeline = wgpuDeviceCreateRenderPipeline(device, &desc);
-
-	// partial clean-up (just move to the end, no?)
-	wgpuPipelineLayoutRelease(pipelineLayout);
-
-	wgpuShaderModuleRelease(fragMod);
-	wgpuShaderModuleRelease(vertMod);
-
-	// create the buffers (x, y, r, g, b)
-	float const vertData[] = {
-		-0.8f, -0.8f, 0.0f, 0.0f, 1.0f, // BL
-		 0.8f, -0.8f, 0.0f, 1.0f, 0.0f, // BR
-		-0.0f,  0.8f, 1.0f, 0.0f, 0.0f, // top
-	};
-	uint16_t const indxData[] = {
-		0, 1, 2,
-		0 // padding (better way of doing this?)
-	};
-	vertBuf = create_buffer(vertData, sizeof(vertData), WGPUBufferUsage_Vertex);
-	indxBuf = create_buffer(indxData, sizeof(indxData), WGPUBufferUsage_Index);
-
-	// create the uniform bind group (note 'rotDeg' is copied here, not bound in any way)
-	uRotBuf = create_buffer(&rot_deg, sizeof(rot_deg), WGPUBufferUsage_Uniform);
-
-	WGPUBindGroupEntry bgEntry = {};
-	bgEntry.binding = 0;
-	bgEntry.buffer = uRotBuf;
-	bgEntry.offset = 0;
-	bgEntry.size = sizeof(rot_deg);
-
-	WGPUBindGroupDescriptor bgDesc = {};
-	bgDesc.layout = bindGroupLayout;
-	bgDesc.entryCount = 1;
-	bgDesc.entries = &bgEntry;
-
-	bindGroup = wgpuDeviceCreateBindGroup(device, &bgDesc);
-
-	// last bit of clean-up
-	wgpuBindGroupLayoutRelease(bindGroupLayout);
-}
-
-
-/**
- * Draws using the above pipeline and buffers.
- */
-static bool redraw() {
-	WGPUTextureView backBufView = wgpuSwapChainGetCurrentTextureView(swapchain);			// create textureView
-
-	WGPURenderPassColorAttachment colorDesc = {};
-	colorDesc.view    = backBufView;
-	colorDesc.loadOp  = WGPULoadOp_Clear;
-	colorDesc.storeOp = WGPUStoreOp_Store;
 #ifdef __EMSCRIPTEN__
-	// Dawn has both clearValue/clearColor but only Color works; Emscripten only has Value
-	colorDesc.clearValue.r = 0.3f;
-	colorDesc.clearValue.g = 0.3f;
-	colorDesc.clearValue.b = 0.3f;
-	colorDesc.clearValue.a = 1.0f;
+#include <emscripten/emscripten.h>
+#include <emscripten/html5.h>
 #else
-	colorDesc.clearColor.r = 0.3f;
-	colorDesc.clearColor.g = 0.3f;
-	colorDesc.clearColor.b = 0.3f;
-	colorDesc.clearColor.a = 1.0f;
+#define GLFW_INCLUDE_NONE
+#include <GLFW/glfw3.h>
+#include "desktop_surface.h"
 #endif
 
-	WGPURenderPassDescriptor renderPass = {};
-	renderPass.colorAttachmentCount = 1;
-	renderPass.colorAttachments = &colorDesc;
-
-	WGPUCommandEncoder encoder = wgpuDeviceCreateCommandEncoder(device, nullptr);			// create encoder
-	WGPURenderPassEncoder pass = wgpuCommandEncoderBeginRenderPass(encoder, &renderPass);	// create pass
-
-	// update the rotation
-	rot_deg += 0.1f;
-	wgpuQueueWriteBuffer(queue, uRotBuf, 0, &rot_deg, sizeof(rot_deg));
-
-	// draw the triangle (comment these five lines to simply clear the screen)
-	wgpuRenderPassEncoderSetPipeline(pass, pipeline);
-	wgpuRenderPassEncoderSetBindGroup(pass, 0, bindGroup, 0, 0);
-	wgpuRenderPassEncoderSetVertexBuffer(pass, 0, vertBuf, 0, WGPU_WHOLE_SIZE);
-	wgpuRenderPassEncoderSetIndexBuffer(pass, indxBuf, WGPUIndexFormat_Uint16, 0, WGPU_WHOLE_SIZE);
-	wgpuRenderPassEncoderDrawIndexed(pass, 3, 1, 0, 0, 0);
-
-	wgpuRenderPassEncoderEnd(pass);
-	wgpuRenderPassEncoderRelease(pass);														// release pass
-	WGPUCommandBuffer commands = wgpuCommandEncoderFinish(encoder, nullptr);				// create commands
-	wgpuCommandEncoderRelease(encoder);														// release encoder
-
-	wgpuQueueSubmit(queue, 1, &commands);
-	wgpuCommandBufferRelease(commands);														// release commands
+namespace {
+wgpu::Instance instance;
+wgpu::Adapter adapter;
+wgpu::Device device;
+wgpu::Surface surface;
+wgpu::SurfaceConfiguration configuration;
+wgpu::RenderPipeline pipeline;
+wgpu::Buffer uniforms;
+wgpu::BindGroup bindGroup;
+bool failed = false;
+bool ready = false;
+uint32_t maxTextureDimension = 0;
 #ifndef __EMSCRIPTEN__
-	/*
-	 * TODO: wgpuSwapChainPresent is unsupported in Emscripten, so what do we do?
-	 */
-	wgpuSwapChainPresent(swapchain);
+GLFWwindow* window = nullptr;
 #endif
-	wgpuTextureViewRelease(backBufView);													// release textureView
+const auto start = std::chrono::steady_clock::now();
 
-	return true;
+std::string text(wgpu::StringView message) {
+    if (!message.data) {
+        return {};
+    }
+    return {message.data, message.length == WGPU_STRLEN ? std::strlen(message.data) : message.length};
 }
+
+void fail(const std::string& message) {
+    std::cerr << message << '\n';
+    failed = true;
+#ifdef __EMSCRIPTEN__
+    EM_ASM({
+        document.getElementById('status').textContent = UTF8ToString($0);
+    }, message.c_str());
+#endif
+}
+
+constexpr char shaderCode[] = R"(
+struct Uniforms {
+    angle: f32,
+    scaleX: f32,
+    scaleY: f32,
+    padding: f32,
+};
+@group(0) @binding(0) var<uniform> uniforms: Uniforms;
+struct Vertex {
+    @builtin(position) position: vec4f,
+    @location(0) color: vec3f,
+};
+@vertex fn vertexMain(@builtin(vertex_index) index: u32) -> Vertex {
+    let positions = array(vec2f(-0.8, -0.8), vec2f(0.8, -0.8), vec2f(0.0, 0.8));
+    let colors = array(vec3f(0, 0, 1), vec3f(0, 1, 0), vec3f(1, 0, 0));
+    let p = positions[index];
+    let c = cos(uniforms.angle);
+    let s = sin(uniforms.angle);
+    let rotated = vec2f(c * p.x - s * p.y, s * p.x + c * p.y);
+    var vertex: Vertex;
+    vertex.position = vec4f(rotated * vec2f(uniforms.scaleX, uniforms.scaleY), 0, 1);
+    vertex.color = colors[index];
+    return vertex;
+}
+@fragment fn fragmentMain(vertex: Vertex) -> @location(0) vec4f {
+    return vec4f(vertex.color, 1);
+}
+)";
+
+void initializeRenderer() {
+    wgpu::SurfaceCapabilities capabilities;
+    if (surface.GetCapabilities(adapter, &capabilities) != wgpu::Status::Success ||
+        capabilities.formatCount == 0 || capabilities.alphaModeCount == 0) {
+        fail("The adapter cannot present to this surface.");
+        return;
+    }
+    configuration.device = device;
+    configuration.format = capabilities.formats[0];
+    configuration.usage = wgpu::TextureUsage::RenderAttachment;
+    configuration.presentMode = wgpu::PresentMode::Fifo;
+    configuration.alphaMode = capabilities.alphaModes[0];
+    wgpu::Limits limits;
+    if (device.GetLimits(&limits) != wgpu::Status::Success) {
+        fail("Querying the WebGPU device limits failed.");
+        return;
+    }
+    maxTextureDimension = limits.maxTextureDimension2D;
+
+    wgpu::ShaderSourceWGSL wgsl;
+    wgsl.code = shaderCode;
+    wgpu::ShaderModuleDescriptor shaderDescriptor;
+    shaderDescriptor.nextInChain = &wgsl;
+    auto shader = device.CreateShaderModule(&shaderDescriptor);
+
+    wgpu::ColorTargetState target;
+    target.format = configuration.format;
+    wgpu::FragmentState fragment;
+    fragment.module = shader;
+    fragment.entryPoint = "fragmentMain";
+    fragment.targetCount = 1;
+    fragment.targets = &target;
+    wgpu::RenderPipelineDescriptor descriptor;
+    descriptor.vertex.module = shader;
+    descriptor.vertex.entryPoint = "vertexMain";
+    descriptor.fragment = &fragment;
+    pipeline = device.CreateRenderPipeline(&descriptor);
+
+    wgpu::BufferDescriptor bufferDescriptor;
+    bufferDescriptor.size = 4 * sizeof(float);
+    bufferDescriptor.usage = wgpu::BufferUsage::Uniform | wgpu::BufferUsage::CopyDst;
+    uniforms = device.CreateBuffer(&bufferDescriptor);
+    wgpu::BindGroupEntry entry;
+    entry.binding = 0;
+    entry.buffer = uniforms;
+    entry.size = bufferDescriptor.size;
+    wgpu::BindGroupDescriptor bindDescriptor;
+    bindDescriptor.layout = pipeline.GetBindGroupLayout(0);
+    bindDescriptor.entryCount = 1;
+    bindDescriptor.entries = &entry;
+    bindGroup = device.CreateBindGroup(&bindDescriptor);
+    ready = !failed;
+}
+
+void requestDevice() {
+    wgpu::DeviceDescriptor descriptor;
+    descriptor.SetUncapturedErrorCallback(
+        [](const wgpu::Device&, wgpu::ErrorType, wgpu::StringView message) {
+            fail("WebGPU error: " + text(message));
+        });
+    descriptor.SetDeviceLostCallback(
+        wgpu::CallbackMode::AllowProcessEvents,
+        [](const wgpu::Device&, wgpu::DeviceLostReason reason, wgpu::StringView message) {
+            if (reason != wgpu::DeviceLostReason::Destroyed) {
+                fail("WebGPU device lost: " + text(message));
+            }
+        });
+    adapter.RequestDevice(
+        &descriptor, wgpu::CallbackMode::AllowProcessEvents,
+        [](wgpu::RequestDeviceStatus status, wgpu::Device result, wgpu::StringView message) {
+            if (status != wgpu::RequestDeviceStatus::Success) {
+                fail("RequestDevice failed: " + text(message));
+                return;
+            }
+            device = std::move(result);
+            initializeRenderer();
+        });
+}
+
+void render() {
+    instance.ProcessEvents();
+    if (failed || !ready) {
+        return;
+    }
+    int width = 0;
+    int height = 0;
+#ifdef __EMSCRIPTEN__
+    double cssWidth = 0;
+    double cssHeight = 0;
+    emscripten_get_element_css_size("#canvas", &cssWidth, &cssHeight);
+    const double ratio = emscripten_get_device_pixel_ratio();
+    width = static_cast<int>(cssWidth * ratio);
+    height = static_cast<int>(cssHeight * ratio);
+#else
+    glfwGetFramebufferSize(window, &width, &height);
+#endif
+    if (width <= 0 || height <= 0) {
+        return;
+    }
+    width = std::min(width, static_cast<int>(maxTextureDimension));
+    height = std::min(height, static_cast<int>(maxTextureDimension));
+    if (configuration.width != static_cast<uint32_t>(width) ||
+        configuration.height != static_cast<uint32_t>(height)) {
+        configuration.width = static_cast<uint32_t>(width);
+        configuration.height = static_cast<uint32_t>(height);
+#ifdef __EMSCRIPTEN__
+        emscripten_set_canvas_element_size("#canvas", width, height);
+#endif
+        surface.Configure(&configuration);
+    }
+
+    wgpu::SurfaceTexture frame;
+    surface.GetCurrentTexture(&frame);
+    switch (frame.status) {
+        case wgpu::SurfaceGetCurrentTextureStatus::SuccessOptimal:
+        case wgpu::SurfaceGetCurrentTextureStatus::SuccessSuboptimal:
+            break;
+        case wgpu::SurfaceGetCurrentTextureStatus::Timeout:
+            return;
+        case wgpu::SurfaceGetCurrentTextureStatus::Outdated:
+        case wgpu::SurfaceGetCurrentTextureStatus::Lost:
+            surface.Configure(&configuration);
+            return;
+        default:
+            fail("Acquiring the surface texture failed.");
+            return;
+    }
+    if (!frame.texture) {
+        fail("WebGPU returned an empty surface texture.");
+        return;
+    }
+    const float seconds = std::chrono::duration<float>(
+        std::chrono::steady_clock::now() - start).count();
+    const float shortest = static_cast<float>(std::min(width, height));
+    const float values[] = {seconds * 0.3f, shortest / width, shortest / height, 0.0f};
+    device.GetQueue().WriteBuffer(uniforms, 0, values, sizeof(values));
+
+    wgpu::RenderPassColorAttachment attachment;
+    attachment.view = frame.texture.CreateView();
+    attachment.loadOp = wgpu::LoadOp::Clear;
+    attachment.storeOp = wgpu::StoreOp::Store;
+    attachment.clearValue = {0.3, 0.3, 0.3, 1.0};
+    wgpu::RenderPassDescriptor passDescriptor;
+    passDescriptor.colorAttachmentCount = 1;
+    passDescriptor.colorAttachments = &attachment;
+    auto encoder = device.CreateCommandEncoder();
+    auto pass = encoder.BeginRenderPass(&passDescriptor);
+    pass.SetPipeline(pipeline);
+    pass.SetBindGroup(0, bindGroup);
+    pass.Draw(3);
+    pass.End();
+    auto commands = encoder.Finish();
+    device.GetQueue().Submit(1, &commands);
+#ifndef __EMSCRIPTEN__
+    surface.Present();
+#endif
+}
+}  // namespace
 
 int main() {
-	std::cout << "ha1" << std::endl;
-
-	if (window::Handle wHnd = window::create()) {
-		if ((device = webgpu::create(wHnd))) {
-			queue = wgpuDeviceGetQueue(device);
-			swapchain = webgpu::createSwapChain(device);
-            create_pipeline_and_buffers();
-
-			window::show(wHnd);
-			window::loop(wHnd, redraw);
-
-		#ifndef __EMSCRIPTEN__
-			wgpuBindGroupRelease(bindGroup);
-			wgpuBufferRelease(uRotBuf);
-			wgpuBufferRelease(indxBuf);
-			wgpuBufferRelease(vertBuf);
-			wgpuRenderPipelineRelease(pipeline);
-			wgpuSwapChainRelease(swapchain);
-			wgpuQueueRelease(queue);
-			wgpuDeviceRelease(device);
-		#endif
-		}
-	#ifndef __EMSCRIPTEN__
-		window::destroy(wHnd);
-	#endif
-	}
-	return 0;
+#ifndef __EMSCRIPTEN__
+    glfwSetErrorCallback([](int, const char* message) { fail(message); });
+    if (!glfwInit()) {
+        return 1;
+    }
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+    window = glfwCreateWindow(640, 480, "Dawn WebGPU triangle", nullptr, nullptr);
+    if (!window) {
+        glfwTerminate();
+        return 1;
+    }
+#endif
+    instance = wgpu::CreateInstance();
+    if (!instance) {
+        fail("Creating the WebGPU instance failed.");
+        return 1;
+    }
+#ifdef __EMSCRIPTEN__
+    wgpu::EmscriptenSurfaceSourceCanvasHTMLSelector source;
+    source.selector = "#canvas";
+    wgpu::SurfaceDescriptor descriptor;
+    descriptor.nextInChain = &source;
+    surface = instance.CreateSurface(&descriptor);
+#else
+    surface = createDesktopSurface(instance, window);
+#endif
+    if (!surface) {
+        fail("Creating the WebGPU surface failed.");
+        return 1;
+    }
+    wgpu::RequestAdapterOptions options;
+    options.compatibleSurface = surface;
+    instance.RequestAdapter(
+        &options, wgpu::CallbackMode::AllowProcessEvents,
+        [](wgpu::RequestAdapterStatus status, wgpu::Adapter result, wgpu::StringView message) {
+            if (status != wgpu::RequestAdapterStatus::Success) {
+                fail("RequestAdapter failed: " + text(message));
+                return;
+            }
+            adapter = std::move(result);
+            requestDevice();
+        });
+#ifdef __EMSCRIPTEN__
+    emscripten_set_main_loop([] {
+        render();
+        if (failed) {
+            emscripten_cancel_main_loop();
+        }
+    }, 0, true);
+#else
+    while (!failed && !glfwWindowShouldClose(window)) {
+        glfwPollEvents();
+        render();
+        if (!ready || glfwGetWindowAttrib(window, GLFW_ICONIFIED)) {
+            glfwWaitEventsTimeout(0.01);
+        }
+    }
+    if (ready && configuration.width != 0) {
+        surface.Unconfigure();
+    }
+    bindGroup = nullptr;
+    uniforms = nullptr;
+    pipeline = nullptr;
+    configuration.device = nullptr;
+    device = nullptr;
+    surface = nullptr;
+    adapter = nullptr;
+    instance = nullptr;
+    glfwDestroyWindow(window);
+    glfwTerminate();
+#endif
+    return failed ? 1 : 0;
 }

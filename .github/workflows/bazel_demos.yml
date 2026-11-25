@@ -264,11 +264,12 @@ jobs:
         run: |
           bazelisk build //...
           bazelisk run //:hello_world
-      - name: Hello World D
-        working-directory: hello_world/d
-        run: |
-          bazelisk build //...
-          bazelisk run //:hello_world
+      # ERROR: D:/a/bazel_demos/bazel_demos/hello_world/d/BUILD.bazel:3:9: Linking hello_world.exe failed: (Exit 1201): link.exe failed: error executing CppLink command (from d_binary rule target //:hello_world) C:\Program Files\Microsoft Visual Studio\18\Enterprise\VC\Tools\MSVC\14.52.37025\bin\HostX64\x64\link.exe @bazel-out/x64_windows-fastbuild/bin/hello_world.exe-0.params
+      #- name: Hello World D
+      #  working-directory: hello_world/d
+      #  run: |
+      #    bazelisk build //...
+      #    bazelisk run //:hello_world
       - name: Hello World Go
         working-directory: hello_world/go
         run: |

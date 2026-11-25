@@ -1,6 +1,5 @@
-cd ${HOME}/dev/Piper/BazelDemos/intermediate/cpp/DawnDemo
-bazel build --config=macos -- //:index-wasm
-bazel_genfiles=$(bazel info bazel-genfiles)
-cd $bazel_genfiles/index-wasm
-sudo cp ${HOME}/dev/Piper/BazelDemos/intermediate/cpp/DawnDemo/index.html index.html
-python3 -m http.server
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "$0")"
+bazel build //:index-wasm
+python3 -m http.server 8000 --bind 127.0.0.1 --directory bazel-bin/index-wasm

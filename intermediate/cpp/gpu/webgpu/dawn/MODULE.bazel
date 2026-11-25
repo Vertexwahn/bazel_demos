@@ -1,0 +1,43 @@
+module(name = "de_vertexwahn_hello_dawn")
+
+bazel_dep(name = "bazel_skylib", version = "1.9.2")
+bazel_dep(name = "abseil-cpp", version = "20260817.0", repo_name = "abseil_cpp")
+bazel_dep(name = "emdawnwebgpu", version = "20260423.175430")
+bazel_dep(name = "emsdk", version = "7.0.0")
+bazel_dep(name = "glfw", version = "3.4.0.bcr.4")
+bazel_dep(name = "platforms", version = "1.1.0")
+bazel_dep(name = "rules_cc", version = "0.2.28")
+bazel_dep(name = "rules_python", version = "2.5.1")
+bazel_dep(name = "spirv_headers", version = "1.4.357.0")
+bazel_dep(name = "vulkan_headers", version = "1.4.349")
+bazel_dep(name = "vulkan_utility_libraries", version = "1.4.349")
+
+python = use_extension("@rules_python//python/extensions:python.bzl", "python")
+python.toolchain(
+    is_default = True,
+    python_version = "3.14",
+)
+
+pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
+pip.parse(
+    hub_name = "dawn_pypi",
+    python_version = "3.14",
+    requirements_lock = "//:requirements_lock.txt",
+)
+use_repo(pip, "dawn_pypi")
+
+# New libc++ releases no longer provide <string> through unrelated headers.
+single_version_override(
+    module_name = "emdawnwebgpu",
+    patch_strip = 1,
+    patches = ["//bazel:emdawnwebgpu-string.patch"],
+)
+
+# Native Dawn is not in BCR; the overlay builds it entirely with Bazel.
+dawn_repository = use_repo_rule("//bazel:dawn_repository.bzl", "dawn_repository")
+
+dawn_repository(
+    name = "dawn_source",
+    commit = "fec851bab7b360449e3de9ebf771bd13d7942194",  # v20261120.121236
+    sha256 = "4bfb992884ca5ec5c080f772977b5b09542eaadf608eccd44e025a27b695fddb",
+)

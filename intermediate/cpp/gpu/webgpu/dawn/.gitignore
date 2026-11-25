@@ -2,3 +2,4 @@
 # based on the name of the directory bazel is cloned into.
 /bazel-*
 /.clwb
+!/MODULE.bazel.lock
